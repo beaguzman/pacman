@@ -220,7 +220,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Mostramos información del movimiento por pantalla
         print(f"[MiniMax] Mov #{self.__numMovimientos} | "
               f"Acción elegida: {mejorAccion} | "
-              f"Valor: {round(mejorValor, 2)}")
+              f"Valor: {round(mejorValor, 2)} | "
+              f"Score actual: {round(gameState.getScore(), 2)}")
 
         estadoFinal = gameState.generateSuccessor(0, mejorAccion)
 
@@ -397,7 +398,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # Print de seguimiento por cada movimiento
         print(f"[AlphaBeta] Mov #{self.__numMovimientos} | "
               f"Acción elegida: {mejorAccion} | "
-              f"Valor: {round(mejorValor, 2)}")
+              f"Valor: {round(mejorValor, 2)} | "
+              f"Score actual: {round(gameState.getScore(), 2)}")
 
         # Comprobamos si el estado siguiente es terminal para mostrar
         # el resumen de la tabla solo una vez, al acabar la partida
@@ -561,7 +563,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # Print de seguimiento por cada movimiento
         print(f"[ExpectiMax] Mov #{self.__numMovimientos} | "
               f"Acción elegida: {mejorAccion} | "
-              f"Valor: {round(mejorValor, 2)}")
+              f"Valor: {round(mejorValor, 2)} | "
+              f"Score actual: {round(gameState.getScore(), 2)}")
 
         # Comprobamos si el estado siguiente es terminal para mostrar
         # el resumen de la tabla solo una vez, al acabar la partida
