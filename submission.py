@@ -8,7 +8,6 @@ from game import Agent
 from pacman import GameState
 
 
-
 class ReflexAgent(Agent):
     """
       A reflex agent chooses an action at each choice point by examining
@@ -74,7 +73,6 @@ class ReflexAgent(Agent):
         # Pick randomly among the best
         chosenIndex = random.choice(bestIndices)
 
-
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState: GameState, action: str) -> float:
@@ -109,13 +107,12 @@ def scoreEvaluationFunction(currentGameState: GameState):
     """
     min_ghostDistance = float('inf')
     currentScore = currentGameState.getScore()
-    
 
     for ghost in currentGameState.getGhostPositions():
         currentDistance = manhattanDistance(ghost, currentGameState.getPacmanPosition())
         if currentDistance < min_ghostDistance: min_ghostDistance = currentDistance
-        
-    return (currentScore-100*(1.0/min_ghostDistance))
+
+    return (currentScore - 100 * (1.0 / min_ghostDistance))
     """
     return currentGameState.getScore()
     """
@@ -147,14 +144,15 @@ class MultiAgentSearchAgent(Agent):
 
 class MinimaxAgent(MultiAgentSearchAgent):
     def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
-    	super().__init__(evalFn,depth)
-    	self.__numMovimientos = 0
+        super().__init__(evalFn, depth)
+        self.__numMovimientos = 0
 
     """
            Método principal que se llama en cada turno de Pac-Man.
            Evalúa todas las acciones posibles desde el estado actual y
            devuelve la que produce el mayor valor MiniMax. getAction ->
            """
+
     def getAction(self, gameState: GameState) -> str:
         """
           Returns the minimax action from the current gameState using self.depth
@@ -212,7 +210,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0
             # porque todavía no hemos completado ningún nivel completo
-            valorAccion = self.minimax(estadoSucesor, agente = 1, profundidad = 0)
+            valorAccion = self.minimax(estadoSucesor, agente=1, profundidad=0)
 
             # Nos quedamos con la acción de mayor valor
             if valorAccion > mejorValor:
@@ -234,12 +232,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
             else:
                 resultado = "E (Ejecutándose)"
 
-            print()
-            print(f"************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
+            print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
                   f" SCORE: {round(gameState.getScore(), 2)}\n"
                   f" MOV: {self.__numMovimientos}\n"
-                  f" FINAL: {resultado}")
-            print()
+                  f" FINAL: {resultado}\n")
+
         return mejorAccion
 
     def minimax(self, gameState, agente, profundidad):
@@ -321,6 +318,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             return valorMin
 
+
 ######################################################################################
 # Problem 2a: implementing alpha-beta
 
@@ -384,7 +382,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             estadoSucesor = gameState.generateSuccessor(0, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0
-            valorAccion = self.alphabeta(estadoSucesor, agente = 1, profundidad = 0, alfa = alfa, beta = beta)
+            valorAccion = self.alphabeta(estadoSucesor, agente=1, profundidad=0, alfa=alfa, beta=beta)
 
             # Actualizamos la mejor acción encontrada hasta ahora
             if valorAccion > mejorValor:
@@ -413,10 +411,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             else:
                 resultado = "E (Ejecutándose)"
 
-            print(f"\n[AlphaBeta] *** RESUMEN FINAL PARA LA TABLA ***\n"
-                 f"  Score      : {round(estadoFinal.getScore(), 2)}\n"
-                 f"  Movimientos: {self.__numMovimientos}\n"
-                 f"  Estado     : {resultado}")
+            print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
+                  f" SCORE: {round(gameState.getScore(), 2)}\n"
+                  f" MOV: {self.__numMovimientos}\n"
+                  f" FINAL: {resultado}\n")
 
         return mejorAccion
 
@@ -510,77 +508,79 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             return valorMin
 
+
 ######################################################################################
 # Problem 3b: implementing expectimax
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
-    	super().__init__(evalFn,depth)
-    	self.__numMovimientos = 0
+        super().__init__(evalFn, depth)
+        self.__numMovimientos = 0
 
         """
         Método principal llamado en cada turno de Pac-Man.
         Evalúa todas las acciones posibles con ExpectiMax y devuelve
         la que produce el mayor valor esperado.
         """
+
     def getAction(self, gameState: GameState) -> str:
-     """
-       Returns the expectimax action using self.depth and self.evaluationFunction
+        """
+          Returns the expectimax action using self.depth and self.evaluationFunction
 
-       All ghosts should be modeled as choosing uniformly at random from their
-       legal moves.
-     """
+          All ghosts should be modeled as choosing uniformly at random from their
+          legal moves.
+        """
 
-     # Contamos este movimiento para la estadística final
-     self.__numMovimientos += 1
+        # Contamos este movimiento para la estadística final
+        self.__numMovimientos += 1
 
-     # Acciones legales de Pac-Man en el estado actual
-     accionesPosibles = gameState.getLegalActions(0)
+        # Acciones legales de Pac-Man en el estado actual
+        accionesPosibles = gameState.getLegalActions(0)
 
-     # Si no hay acciones disponibles, Pac-Man se detiene
-     if not accionesPosibles:
-         return Directions.STOP
+        # Si no hay acciones disponibles, Pac-Man se detiene
+        if not accionesPosibles:
+            return Directions.STOP
 
-     mejorAccion = None
-     mejorValor = float('-inf')  # Empezamos con el peor valor posible
+        mejorAccion = None
+        mejorValor = float('-inf')  # Empezamos con el peor valor posible
 
-     for accion in accionesPosibles:
-         # Generamos el estado resultante de que Pac-Man haga esta acción
-         estadoSucesor = gameState.generateSuccessor(0, accion)
+        for accion in accionesPosibles:
+            # Generamos el estado resultante de que Pac-Man haga esta acción
+            estadoSucesor = gameState.generateSuccessor(0, accion)
 
-         # Ahora le toca al agente 1 (primer fantasma), profundidad 0.
-         # Al ser fantasma, llamamos al nodo de azar directamente.
-         valorAccion = self.expectimax(estadoSucesor, agente = 1, profundidad = 0)
+            # Ahora le toca al agente 1 (primer fantasma), profundidad 0.
+            # Al ser fantasma, llamamos al nodo de azar directamente.
+            valorAccion = self.expectimax(estadoSucesor, agente=1, profundidad=0)
 
-         # Nos quedamos con la acción de mayor valor esperado
-         if valorAccion > mejorValor:
-             mejorValor = valorAccion
-             mejorAccion = accion
+            # Nos quedamos con la acción de mayor valor esperado
+            if valorAccion > mejorValor:
+                mejorValor = valorAccion
+                mejorAccion = accion
 
-     # Print de seguimiento por cada movimiento
-     print(f"[ExpectiMax] Mov #{self.__numMovimientos} | "
-           f"Acción elegida: {mejorAccion} | "
-           f"Valor: {round(mejorValor, 2)}")
+        # Print de seguimiento por cada movimiento
+        print(f"[ExpectiMax] Mov #{self.__numMovimientos} | "
+              f"Acción elegida: {mejorAccion} | "
+              f"Valor: {round(mejorValor, 2)}")
 
-     # Comprobamos si el estado siguiente es terminal para mostrar
-     # el resumen de la tabla solo una vez, al acabar la partida
-     estadoFinal = gameState.generateSuccessor(0, mejorAccion)
+        # Comprobamos si el estado siguiente es terminal para mostrar
+        # el resumen de la tabla solo una vez, al acabar la partida
+        estadoFinal = gameState.generateSuccessor(0, mejorAccion)
 
-     if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
-         if estadoFinal.isWin():
-             resultado = "V (Victoria)"
-         elif estadoFinal.isLose():
-             resultado = "D (Derrota)"
-         else:
-             resultado = "E (Ejecutándose)"
+        if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
+            if estadoFinal.isWin():
+                resultado = "V (Victoria)"
+            elif estadoFinal.isLose():
+                resultado = "D (Derrota)"
+            else:
+                resultado = "E (Ejecutándose)"
 
-         print(f"************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
-               f"  Score      : {round(estadoFinal.getScore(), 2)}\n"
-               f"  Movimientos: {self.__numMovimientos}\n"
-               f"  Estado     : {resultado}")
+            print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
+                  f"  Score      : {round(estadoFinal.getScore(), 2)}\n"
+                  f"  Movimientos: {self.__numMovimientos}\n"
+                  f"  Estado     : {resultado}\n")
 
-     return mejorAccion
+        return mejorAccion
 
     def expectimax(self, gameState, agente, profundidad):
         """
@@ -662,19 +662,107 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 ######################################################################################
 # Problem 4a (extra credit): creating a better evaluation function
 
-
 def betterEvaluationFunction(currentGameState: GameState) -> float:
-    """
-      Your extreme, unstoppable evaluation function (problem 4). Note that you can't fix a seed in this function.
-    """
+    # Partimos de la puntuación actual del juego como valor base
+    puntuacion = currentGameState.getScore()
 
-    # BEGIN_YOUR_CODE (our solution is 16 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
-    # END_YOUR_CODE
+    # Obtenemos la posición actual de Pac-Man
+    posicionPacman = currentGameState.getPacmanPosition()
+
+    # Obtenemos las posiciones de todos los fantasmas
+    posicionesFantasmas = currentGameState.getGhostPositions()
+
+    # Solo penalizamos si hay fantasmas en el tablero
+    if not posicionesFantasmas:
+        return puntuacion
+
+    # Calculamos la distancia Manhattan de Pac-Man a cada fantasma
+    # y nos quedamos con la del más cercano
+    distanciaMinima = min(manhattanDistance(posicionPacman, posFantasma) for posFantasma in posicionesFantasmas)
+
+    # Aplicamos la penalización según la fórmula del enunciado:
+    # cuanto más cerca está el fantasma, mayor es la penalización.
+    # Si el fantasma está en la misma casilla, penalizamos con un
+    # valor muy alto para evitar ese estado a toda costa.
+    if distanciaMinima > 0:
+        puntuacion -= 100.0 * (1.0 / distanciaMinima)
+    else:
+        puntuacion -= 10000
+
+    return puntuacion
 
 
 # Abbreviation
 better = betterEvaluationFunction
 
 
+def evaluationFunction5(currentGameState):
+    # ============= Parámetro 1 =============
+    termino1 = currentGameState.getScore()
+    w1 = 5  # Peso de score, importancia de score en el cálculo
 
+    # ============= Parámetro 2 =============
+    posComida = currentGameState.getFood().asList()  # lista de posiciones de donde está la comida (x, y)
+    pacmanPos = currentGameState.getPacmanPosition()
+    termino2 = (min(manhattanDistance(pacmanPos, comida) for comida in posComida) if posComida else 0)
+    w2 = 10  # Peso de la distancia a la comida más cercana
+
+    # ============= Parámetro 3 =============
+    posFantasma = currentGameState.getGhostPositions().asList()
+    termino3 = 0.0
+
+    if posFantasma:
+        Fantasma_masCercano = (
+            min(manhattanDistance(pacmanPos, fantasma) for fantasma in posFantasma) if posFantasma else 0)
+        if Fantasma_masCercano > 0:
+            termino3 = (1 / Fantasma_masCercano)
+        else:  # Si hay un movimiento que me lleva directamente al fantasma devuelvo una malísima puntuación
+            return -999999
+    w3 = 1 # Peso de la distancia al fantasma más cercano
+
+    return termino1 * w1 - termino2 * w2 - termino3 * w3
+
+def evaluationFunction6(currentGameState):
+    estados = currentGameState.getGhostState()
+    asustados = 0
+
+    for s in estados:
+        if s.scaredTimer > 0:
+            asustados = 1
+
+        if asustados == 0:
+            return evaluationFunction5(currentGameState)
+        else:
+            termino1 = currentGameState.getScore()
+            w1 = 5
+
+            posComida = currentGameState.getFood().asList()
+            pacmanPos = currentGameState.getPacmanPosition()
+            termino2 = (min(manhattanDistance(pacmanPos, comida) for comida in posComida) if posComida else 0)
+            w2 = 10
+
+            no_asustados = []
+            asustados = []
+            posFantasma = currentGameState.getGhostPositions()
+            for i in range (0, len(posFantasma)):
+                if estados[i] == 0:
+                    no_asustados.append(posFantasma[i])
+                else:
+                    asustados.append(posFantasma[i])
+            if no_asustados:
+                mas_cercano = min(no_asustados)
+                if mas_cercano > 0:
+                    termino3 = 1 / mas_cercano
+                else:
+                    return -999999
+            else:
+                termino3 = 0.0
+            w3 = 1
+            if asustados:
+                mas_cercano = min(asustados)
+                termino4 = 200 / (mas_cercano+1)
+            else:
+                termino4 = 0.0
+            w4 = 10
+
+            return termino1 * w1 - termino2 * w2 - termino3 * w3 - termino4 * w4
