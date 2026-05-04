@@ -210,7 +210,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0
             # porque todavía no hemos completado ningún nivel completo
-            valorAccion = self.minimax(estadoSucesor, agente=1, profundidad=0)
+            valorAccion = self.minimax(estadoSucesor, agente = 1, profundidad = 0)
 
             # Nos quedamos con la acción de mayor valor
             if valorAccion > mejorValor:
@@ -435,10 +435,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         los nodos MAX y MIN.
         """
 
-        totalAgentes = gameState.getNumAgents()
-
         # --- CASOS BASE ---
-
         # Estado terminal: resultado definitivo conocido
         if gameState.isWin() or gameState.isLose():
             return gameState.getScore()
@@ -455,8 +452,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # --- CÁLCULO DEL SIGUIENTE TURNO ---
         # Igual que en MiniMax y ExpectiMax: rotamos agentes y
         # subimos profundidad cuando volvemos al agente 0.
-        siguienteAgente = (agente + 1) % totalAgentes
-        siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+        #siguienteAgente = (agente + 1) % totalAgentes
+        #siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+
+        totalAgentes = gameState.getNumAgents()
 
         # --- NODO MAX: turno de Pac-Man (agente 0) ---
         if agente == 0:
@@ -464,10 +463,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             for accion in accionesLegales:
                 sucesor = gameState.generateSuccessor(agente, accion)
-                valorHijo = self.alphabeta(
-                    sucesor, siguienteAgente, siguienteProfundidad,
-                    alfa, beta
-                )
+                valorHijo = self.alphabeta(sucesor, 1, profundidad, alfa, beta)
 
                 if valorHijo > valorMax:
                     valorMax = valorHijo
@@ -489,10 +485,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             for accion in accionesLegales:
                 sucesor = gameState.generateSuccessor(agente, accion)
-                valorHijo = self.alphabeta(
-                    sucesor, siguienteAgente, siguienteProfundidad,
-                    alfa, beta
-                )
+
+                # Si quedan más fantasmas por jugar en esta ronda
+                if agente + 1 < totalAgentes:
+                    valorHijo = self.alphabeta(sucesor, agente+1, profundidad, alfa, beta)
+                else:
+                    # Todos los fantasmas han jugado → nueva ronda de Pac-Man
+                    # aquí sí incrementamos la profundidad
+                    valorHijo = self.alphabeta(sucesor, 0, profundidad + 1, alfa, beta)
 
                 if valorHijo < valorMin:
                     valorMin = valorHijo
@@ -694,75 +694,3 @@ def betterEvaluationFunction(currentGameState: GameState) -> float:
 
 # Abbreviation
 better = betterEvaluationFunction
-
-
-def evaluationFunction5(currentGameState):
-    # ============= Parámetro 1 =============
-    termino1 = currentGameState.getScore()
-    w1 = 5  # Peso de score, importancia de score en el cálculo
-
-    # ============= Parámetro 2 =============
-    posComida = currentGameState.getFood().asList()  # lista de posiciones de donde está la comida (x, y)
-    pacmanPos = currentGameState.getPacmanPosition()
-    termino2 = (min(manhattanDistance(pacmanPos, comida) for comida in posComida) if posComida else 0)
-    w2 = 10  # Peso de la distancia a la comida más cercana
-
-    # ============= Parámetro 3 =============
-    posFantasma = currentGameState.getGhostPositions().asList()
-    termino3 = 0.0
-
-    if posFantasma:
-        Fantasma_masCercano = (
-            min(manhattanDistance(pacmanPos, fantasma) for fantasma in posFantasma) if posFantasma else 0)
-        if Fantasma_masCercano > 0:
-            termino3 = (1 / Fantasma_masCercano)
-        else:  # Si hay un movimiento que me lleva directamente al fantasma devuelvo una malísima puntuación
-            return -999999
-    w3 = 1 # Peso de la distancia al fantasma más cercano
-
-    return termino1 * w1 - termino2 * w2 - termino3 * w3
-
-def evaluationFunction6(currentGameState):
-    estados = currentGameState.getGhostState()
-    asustados = 0
-
-    for s in estados:
-        if s.scaredTimer > 0:
-            asustados = 1
-
-        if asustados == 0:
-            return evaluationFunction5(currentGameState)
-        else:
-            termino1 = currentGameState.getScore()
-            w1 = 5
-
-            posComida = currentGameState.getFood().asList()
-            pacmanPos = currentGameState.getPacmanPosition()
-            termino2 = (min(manhattanDistance(pacmanPos, comida) for comida in posComida) if posComida else 0)
-            w2 = 10
-
-            no_asustados = []
-            asustados = []
-            posFantasma = currentGameState.getGhostPositions()
-            for i in range (0, len(posFantasma)):
-                if estados[i] == 0:
-                    no_asustados.append(posFantasma[i])
-                else:
-                    asustados.append(posFantasma[i])
-            if no_asustados:
-                mas_cercano = min(no_asustados)
-                if mas_cercano > 0:
-                    termino3 = 1 / mas_cercano
-                else:
-                    return -999999
-            else:
-                termino3 = 0.0
-            w3 = 1
-            if asustados:
-                mas_cercano = min(asustados)
-                termino4 = 200 / (mas_cercano+1)
-            else:
-                termino4 = 0.0
-            w4 = 10
-
-            return termino1 * w1 - termino2 * w2 - termino3 * w3 - termino4 * w4
