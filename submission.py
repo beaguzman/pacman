@@ -187,7 +187,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         self.__numMovimientos += 1
 
         # Recuperamos todas las acciones que puede hacer pacman ahora mismo
-        accionesPosibles = gameState.getLegalActions(0)
+        accionesPosibles = gameState.getLegalActions(self.index)
 
         # Si por algún motivo no hay acciones legales, nos detenemos
         if not accionesPosibles:
@@ -199,10 +199,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         for accion in accionesPosibles:
             # Generamos el tablero resultante de que pacman haga esta acción
-            estadoSucesor = gameState.generateSuccessor(0, accion)
+            estadoSucesor = gameState.generateSuccessor(self.index, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0 porque todavía no hemos completado ningún nivel completo
-            valorAccion = self.minimax(estadoSucesor, agente = 1, profundidad = 0)
+            valorAccion = self.minimax(estadoSucesor, agente =self.index+1, profundidad = 0)
 
             # Nos quedamos con la acción de mayor valor
             if valorAccion > mejorValor:
@@ -215,7 +215,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
               f"Valor: {round(mejorValor, 2)} | "
               f"Score actual: {gameState.getScore()}")
 
-        estadoFinal = gameState.generateSuccessor(0, mejorAccion)
+        estadoFinal = gameState.generateSuccessor(self.index, mejorAccion)
 
         if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
             if estadoFinal.isWin():
@@ -259,7 +259,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
 
         # NODO MAX: turno de pacman (agente 0)
-        if agente == 0:
+        if agente == self.index:
             valorMax = float('-inf')
 
             for accion in accionesLegales:
