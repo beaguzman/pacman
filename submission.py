@@ -147,12 +147,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         super().__init__(evalFn, depth)
         self.__numMovimientos = 0
 
-    """
-           Método principal que se llama en cada turno de Pac-Man.
-           Evalúa todas las acciones posibles desde el estado actual y
-           devuelve la que produce el mayor valor MiniMax. getAction ->
-           """
-
     def getAction(self, gameState: GameState) -> str:
         """
           Returns the minimax action from the current gameState using self.depth
@@ -192,24 +186,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Contamos este movimiento para la estadística final
         self.__numMovimientos += 1
 
-        # Recuperamos todas las acciones que puede hacer Pac-Man ahora mismo
+        # Recuperamos todas las acciones que puede hacer pacman ahora mismo
         accionesPosibles = gameState.getLegalActions(0)
 
         # Si por algún motivo no hay acciones legales, nos detenemos
         if not accionesPosibles:
             return Directions.STOP
 
-        # Para cada acción generamos el estado sucesor y lo evaluamos
-        # con minimax. Guardamos la acción que da el valor más alto.
+        # Para cada acción generamos el estado sucesor y lo evaluamos con minimax. Guardamos la acción que da el valor más alto.
         mejorAccion = None
         mejorValor = float('-inf')  # Empezamos con el peor caso posible
 
         for accion in accionesPosibles:
-            # Generamos el tablero resultante de que Pac-Man haga esta acción
+            # Generamos el tablero resultante de que pacman haga esta acción
             estadoSucesor = gameState.generateSuccessor(0, accion)
 
-            # Ahora le toca al agente 1 (primer fantasma), profundidad 0
-            # porque todavía no hemos completado ningún nivel completo
+            # Ahora le toca al agente 1 (primer fantasma), profundidad 0 porque todavía no hemos completado ningún nivel completo
             valorAccion = self.minimax(estadoSucesor, agente = 1, profundidad = 0)
 
             # Nos quedamos con la acción de mayor valor
@@ -217,11 +209,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 mejorValor = valorAccion
                 mejorAccion = accion
 
-        # Mostramos información del movimiento por pantalla
-        print(f"[MiniMax] Mov #{self.__numMovimientos} | "
-              f"Acción elegida: {mejorAccion} | "
+        # Print de seguimiento por cada movimiento
+        print(f"Movimiento nº {self.__numMovimientos} | "
+              f"Acción: {mejorAccion} | "
               f"Valor: {round(mejorValor, 2)} | "
-              f"Score actual: {round(gameState.getScore(), 2)}")
+              f"Score actual: {gameState.getScore()}")
 
         estadoFinal = gameState.generateSuccessor(0, mejorAccion)
 
@@ -234,45 +226,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 resultado = "E (Ejecutándose)"
 
             print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
-                  f" SCORE: {round(gameState.getScore(), 2)}\n"
-                  f" MOV: {self.__numMovimientos}\n"
-                  f" FINAL: {resultado}\n")
+                  f"  Score: {estadoFinal.getScore()}\n"
+                  f"  Movimientos: {self.__numMovimientos}\n"
+                  f"  Estado: {resultado}\n")
 
         return mejorAccion
 
     def minimax(self, gameState, agente, profundidad):
-        """
-        Función recursiva unificada que implementa MiniMax.
-
-        Parámetros:
-            gameState  : estado actual del juego
-            agente     : índice del agente que debe mover ahora
-                         (0 = Pac-Man/MAX, cualquier otro = fantasma/MIN)
-            profundidad: nivel actual del árbol. Se incrementa cada vez
-                         que TODOS los agentes han jugado una ronda completa.
-
-        Lógica de terminación:
-            1. Si el estado es terminal (victoria o derrota) → devolvemos
-               la puntuación real del juego.
-            2. Si alcanzamos la profundidad límite → devolvemos el valor
-               heurístico de la función de evaluación.
-            3. Si no hay acciones disponibles → ídem que caso 2.
-
-        Lógica de recursión:
-            - Agente 0 (Pac-Man): nodo MAX → buscamos el máximo entre sucesores.
-            - Cualquier otro agente (fantasma): nodo MIN → buscamos el mínimo.
-            - Cuando el último fantasma ha jugado, el siguiente agente vuelve
-              a ser Pac-Man (agente 0) y la profundidad sube en 1.
-        """
-
         totalAgentes = gameState.getNumAgents()
 
-        # --- CASOS BASE ---
-
-        # Estado terminal: Pac-Man ganó o perdió
+        # --- CASOS BASE --
+        # Pacman ganó o perdió
         if gameState.isWin() or gameState.isLose():
-            # Devolvemos la puntuación real, no la heurística,
-            # porque ya sabemos el resultado definitivo
+            # Devolvemos la puntuación real, no la heurística, porque ya sabemos el resultado definitivo
             return gameState.getScore()
 
         # Límite de profundidad alcanzado: usamos la heurística
@@ -282,18 +248,17 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Acciones disponibles para el agente actual
         accionesLegales = gameState.getLegalActions(agente)
 
-        # Sin acciones posibles: el agente está atrapado, evaluamos con heurística
+        # Sin acciones posibles: el agente está bloqueado
         if not accionesLegales:
             return self.evaluationFunction(gameState)
 
         # --- CÁLCULO DEL SIGUIENTE TURNO ---
         # Los agentes rotan: 0 → 1 → 2 → ... → (N-1) → 0 → 1 → ...
-        # Cuando volvemos al agente 0 significa que una ronda entera ha pasado,
-        # por eso incrementamos la profundidad.
+        # Cuando volvemos al agente 0 significa que una ronda entera ha pasado, por eso incrementamos la profundidad.
         siguienteAgente = (agente + 1) % totalAgentes
         siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
 
-        # --- NODO MAX: turno de Pac-Man (agente 0) ---
+        # NODO MAX: turno de pacman (agente 0)
         if agente == 0:
             valorMax = float('-inf')
 
@@ -306,7 +271,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             return valorMax
 
-        # --- NODO MIN: turno de un fantasma (agente != 0) ---
+        # NODO MIN: turno de un fantasma (agente 1)
         else:
             valorMin = float('+inf')
 
@@ -330,29 +295,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       You may reference the pseudocode for Alpha-Beta pruning here:
       en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode
     """
-    """
-       Agente que implementa MiniMax con poda Alfa-Beta.
-
-       La idea es exactamente la misma que MiniMax: Pac-Man maximiza y los
-       fantasmas minimizan. La diferencia es que mantenemos dos valores extra
-       durante la búsqueda:
-
-           alfa → el mejor valor que MAX puede garantizarse en el camino actual.
-                  Se actualiza en los nodos MAX.
-           beta → el mejor valor que MIN puede garantizarse en el camino actual.
-                  Se actualiza en los nodos MIN.
-
-       Gracias a estos dos valores podemos PODAR ramas del árbol que nunca
-       serán elegidas:
-           - Poda beta: en un nodo MAX, si encontramos un valor >= beta,
-             el MIN padre nunca elegiría este camino → dejamos de explorar.
-           - Poda alfa: en un nodo MIN, si encontramos un valor <= alfa,
-             el MAX padre nunca elegiría este camino → dejamos de explorar.
-
-       El resultado final es idéntico a MiniMax, pero explorando muchas
-       menos ramas del árbol, lo que permite mayor profundidad en el mismo
-       tiempo de cómputo.
-       """
 
     def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
         super().__init__(evalFn, depth)
@@ -362,10 +304,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # Contamos este movimiento para la estadística final
         self.__numMovimientos += 1
 
-        # Acciones legales de Pac-Man en el estado actual
+        # Acciones legales de pacman en el estado actual
         accionesPosibles = gameState.getLegalActions(0)
 
-        # Si no hay acciones disponibles, Pac-Man se detiene
+        # Si no hay acciones disponibles, pacman se detiene
         if not accionesPosibles:
             return Directions.STOP
 
@@ -373,17 +315,17 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         mejorValor = float('-inf')
 
         # Inicializamos alfa y beta para la raíz del árbol.
-        # alfa = -inf → MAX aún no tiene ninguna garantía.
-        # beta = +inf → MIN aún no tiene ninguna garantía.
+        # alfa = -inf ; MAX aún no tiene ninguna garantía.
+        # beta = +inf ; MIN aún no tiene ninguna garantía.
         alfa = float('-inf')
         beta = float('+inf')
 
         for accion in accionesPosibles:
-            # Generamos el estado resultante de que Pac-Man haga esta acción
+            # Generamos el estado resultante de que pacman haga esta acción
             estadoSucesor = gameState.generateSuccessor(0, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0
-            valorAccion = self.alphabeta(estadoSucesor, agente=1, profundidad=0, alfa=alfa, beta=beta)
+            valorAccion = self.alphabeta(estadoSucesor, agente = 1, profundidad = 0, alfa = alfa, beta = beta)
 
             # Actualizamos la mejor acción encontrada hasta ahora
             if valorAccion > mejorValor:
@@ -396,13 +338,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 alfa = mejorValor
 
         # Print de seguimiento por cada movimiento
-        print(f"[AlphaBeta] Mov #{self.__numMovimientos} | "
-              f"Acción elegida: {mejorAccion} | "
+        print(f"Movimiento nº {self.__numMovimientos} | "
+              f"Acción: {mejorAccion} | "
               f"Valor: {round(mejorValor, 2)} | "
-              f"Score actual: {round(gameState.getScore(), 2)}")
+              f"Score actual: {gameState.getScore()}")
 
-        # Comprobamos si el estado siguiente es terminal para mostrar
-        # el resumen de la tabla solo una vez, al acabar la partida
+        # Comprobamos si el estado siguiente es terminal para mostrar el resumen de la tabla solo una vez, al acabar la partida
         estadoFinal = gameState.generateSuccessor(0, mejorAccion)
 
         if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
@@ -414,31 +355,17 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 resultado = "E (Ejecutándose)"
 
             print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
-                  f" SCORE: {round(gameState.getScore(), 2)}\n"
-                  f" MOV: {self.__numMovimientos}\n"
-                  f" FINAL: {resultado}\n")
+                  f"  Score: {estadoFinal.getScore()}\n"
+                  f"  Movimientos: {self.__numMovimientos}\n"
+                  f"  Estado: {resultado}\n")
 
         return mejorAccion
 
     def alphabeta(self, gameState, agente, profundidad, alfa, beta):
-        """
-        Función recursiva unificada que implementa MiniMax con poda Alfa-Beta.
-
-        Parámetros:
-            gameState  : estado actual del juego
-            agente     : índice del agente que mueve ahora
-                         (0 = Pac-Man/MAX, cualquier otro = fantasma/MIN)
-            profundidad: rondas completas exploradas hasta ahora
-            alfa       : mejor valor garantizado para MAX en este camino
-            beta       : mejor valor garantizado para MIN en este camino
-
-        La lógica de terminación y rotación de agentes es idéntica a MiniMax.
-        La única diferencia está en las condiciones de poda dentro de
-        los nodos MAX y MIN.
-        """
+        totalAgentes = gameState.getNumAgents()
 
         # --- CASOS BASE ---
-        # Estado terminal: resultado definitivo conocido
+        # Pacman ganó o perdió
         if gameState.isWin() or gameState.isLose():
             return gameState.getScore()
 
@@ -446,26 +373,27 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if profundidad == self.depth:
             return self.evaluationFunction(gameState)
 
-        # Sin acciones posibles: el agente está bloqueado
+        # Acciones disponibles para el agente actual
         accionesLegales = gameState.getLegalActions(agente)
+
+        # Sin acciones posibles: el agente está bloqueado
         if not accionesLegales:
             return self.evaluationFunction(gameState)
 
         # --- CÁLCULO DEL SIGUIENTE TURNO ---
-        # Igual que en MiniMax y ExpectiMax: rotamos agentes y
-        # subimos profundidad cuando volvemos al agente 0.
-        #siguienteAgente = (agente + 1) % totalAgentes
-        #siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+        # Igual que en MiniMax y ExpectiMax: rotamos agentes y subimos profundidad cuando volvemos al agente 0.
+        siguienteAgente = (agente + 1) % totalAgentes
+        siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
 
         totalAgentes = gameState.getNumAgents()
 
-        # --- NODO MAX: turno de Pac-Man (agente 0) ---
+        # NODO MAX: turno de pacman (agente 0)
         if agente == 0:
             valorMax = float('-inf')
 
             for accion in accionesLegales:
                 sucesor = gameState.generateSuccessor(agente, accion)
-                valorHijo = self.alphabeta(sucesor, 1, profundidad, alfa, beta)
+                valorHijo = self.alphabeta(sucesor, siguienteAgente, siguienteProfundidad, alfa, beta)
 
                 if valorHijo > valorMax:
                     valorMax = valorHijo
@@ -481,7 +409,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             return valorMax
 
-        # --- NODO MIN: turno de un fantasma (agente != 0) ---
+        # NODO MIN: turno de un fantasma (agente 1)
         else:
             valorMin = float('+inf')
 
@@ -492,15 +420,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 if agente + 1 < totalAgentes:
                     valorHijo = self.alphabeta(sucesor, agente+1, profundidad, alfa, beta)
                 else:
-                    # Todos los fantasmas han jugado → nueva ronda de Pac-Man
+                    # Todos los fantasmas han jugado → nueva ronda de pacman
                     # aquí sí incrementamos la profundidad
                     valorHijo = self.alphabeta(sucesor, 0, profundidad + 1, alfa, beta)
 
                 if valorHijo < valorMin:
                     valorMin = valorHijo
 
-                # Poda alfa: si el valor ya es menor que lo que MAX garantiza,
-                # no tiene sentido seguir explorando este nodo MIN
+                # Poda alfa: si el valor ya es menor que lo que MAX garantiza, no tiene sentido seguir explorando este nodo MIN
                 if valorMin < alfa:
                     return valorMin
 
@@ -520,12 +447,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         super().__init__(evalFn, depth)
         self.__numMovimientos = 0
 
-        """
-        Método principal llamado en cada turno de Pac-Man.
-        Evalúa todas las acciones posibles con ExpectiMax y devuelve
-        la que produce el mayor valor esperado.
-        """
-
     def getAction(self, gameState: GameState) -> str:
         """
           Returns the expectimax action using self.depth and self.evaluationFunction
@@ -537,10 +458,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # Contamos este movimiento para la estadística final
         self.__numMovimientos += 1
 
-        # Acciones legales de Pac-Man en el estado actual
+        # Acciones legales de pacman en el estado actual
         accionesPosibles = gameState.getLegalActions(0)
 
-        # Si no hay acciones disponibles, Pac-Man se detiene
+        # Si no hay acciones disponibles, pacman se detiene
         if not accionesPosibles:
             return Directions.STOP
 
@@ -548,12 +469,12 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         mejorValor = float('-inf')  # Empezamos con el peor valor posible
 
         for accion in accionesPosibles:
-            # Generamos el estado resultante de que Pac-Man haga esta acción
+            # Generamos el estado resultante de que pacman haga esta acción
             estadoSucesor = gameState.generateSuccessor(0, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0.
             # Al ser fantasma, llamamos al nodo de azar directamente.
-            valorAccion = self.expectimax(estadoSucesor, agente=1, profundidad=0)
+            valorAccion = self.expectimax(estadoSucesor, agente = 1, profundidad = 0)
 
             # Nos quedamos con la acción de mayor valor esperado
             if valorAccion > mejorValor:
@@ -561,13 +482,12 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 mejorAccion = accion
 
         # Print de seguimiento por cada movimiento
-        print(f"[ExpectiMax] Mov #{self.__numMovimientos} | "
-              f"Acción elegida: {mejorAccion} | "
+        print(f"Movimiento nº {self.__numMovimientos} | "
+              f"Acción: {mejorAccion} | "
               f"Valor: {round(mejorValor, 2)} | "
-              f"Score actual: {round(gameState.getScore(), 2)}")
+              f"Score actual: {gameState.getScore()}")
 
-        # Comprobamos si el estado siguiente es terminal para mostrar
-        # el resumen de la tabla solo una vez, al acabar la partida
+        # Comprobamos si el estado siguiente es terminal para mostrar el resumen de la tabla solo una vez, al acabar la partida
         estadoFinal = gameState.generateSuccessor(0, mejorAccion)
 
         if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
@@ -579,40 +499,17 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 resultado = "E (Ejecutándose)"
 
             print(f"\n************ RESULTADOS PARA LA TABLA DE ANÁLISIS ************\n"
-                  f"  Score      : {round(estadoFinal.getScore(), 2)}\n"
+                  f"  Score: {estadoFinal.getScore()}\n"
                   f"  Movimientos: {self.__numMovimientos}\n"
-                  f"  Estado     : {resultado}\n")
+                  f"  Estado: {resultado}\n")
 
         return mejorAccion
 
     def expectimax(self, gameState, agente, profundidad):
-        """
-        Función recursiva unificada que implementa ExpectiMax.
-
-        Parámetros:
-            gameState  : estado actual del juego
-            agente     : índice del agente que mueve ahora
-                         (0 = Pac-Man/MAX, cualquier otro = fantasma/AZAR)
-            profundidad: rondas completas exploradas hasta ahora
-
-        Lógica de terminación (igual que MiniMax):
-            1. Estado terminal (victoria o derrota) → puntuación real.
-            2. Profundidad límite alcanzada → valor heurístico.
-            3. Sin acciones disponibles → valor heurístico.
-
-        Lógica de recursión:
-            - Agente 0 (Pac-Man): nodo MAX → devuelve el máximo de sus hijos.
-            - Cualquier otro agente (fantasma): nodo AZAR → devuelve la MEDIA
-              de los valores de todos sus hijos, asumiendo equiprobabilidad.
-            - Cuando el último fantasma ha jugado, volvemos al agente 0
-              y la profundidad sube en 1.
-        """
-
         totalAgentes = gameState.getNumAgents()
 
         # --- CASOS BASE ---
-
-        # Estado terminal: resultado definitivo conocido
+        # Pacman ganó o perdió
         if gameState.isWin() or gameState.isLose():
             return gameState.getScore()
 
@@ -620,8 +517,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if profundidad == self.depth:
             return self.evaluationFunction(gameState)
 
-        # Sin acciones posibles: el agente está bloqueado
+        # Acciones disponibles para el agente actual
         accionesLegales = gameState.getLegalActions(agente)
+
+        # Sin acciones posibles: el agente está bloqueado
         if not accionesLegales:
             return self.evaluationFunction(gameState)
 
@@ -631,7 +530,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         siguienteAgente = (agente + 1) % totalAgentes
         siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
 
-        # --- NODO MAX: turno de Pac-Man (agente 0) ---
+        # NODO MAX: turno de pacman (agente 0)
         if agente == 0:
             valorMax = float('-inf')
 
@@ -645,12 +544,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
             return valorMax
 
-        # --- NODO AZAR: turno de un fantasma (agente != 0) ---
+        # NODO AZAR: turno de un fantasma (agente 1)
         else:
-            # A diferencia de MiniMax, aquí NO buscamos el mínimo.
-            # Sumamos todos los valores y devolvemos la media,
-            # porque asumimos que el fantasma elige aleatoriamente
-            # con igual probabilidad cada acción disponible.
+            # A diferencia de MiniMax, aquí no buscamos el mínimo.
+            # Sumamos todos los valores y devolvemos la media, porque asumimos que el fantasma elige aleatoriamente con igual probabilidad cada acción disponible.
             sumaValores = 0.0
 
             for accion in accionesLegales:
@@ -669,7 +566,7 @@ def betterEvaluationFunction(currentGameState: GameState) -> float:
     # Partimos de la puntuación actual del juego como valor base
     puntuacion = currentGameState.getScore()
 
-    # Obtenemos la posición actual de Pac-Man
+    # Obtenemos la posición actual de pacman
     posicionPacman = currentGameState.getPacmanPosition()
 
     # Obtenemos las posiciones de todos los fantasmas
@@ -679,14 +576,11 @@ def betterEvaluationFunction(currentGameState: GameState) -> float:
     if not posicionesFantasmas:
         return puntuacion
 
-    # Calculamos la distancia Manhattan de Pac-Man a cada fantasma
-    # y nos quedamos con la del más cercano
+    # Calculamos la distancia Manhattan de pacman a cada fantasma y nos quedamos con la del más cercano
     distanciaMinima = min(manhattanDistance(posicionPacman, posFantasma) for posFantasma in posicionesFantasmas)
 
-    # Aplicamos la penalización según la fórmula del enunciado:
-    # cuanto más cerca está el fantasma, mayor es la penalización.
-    # Si el fantasma está en la misma casilla, penalizamos con un
-    # valor muy alto para evitar ese estado a toda costa.
+    # Aplicamos la penalización según la fórmula del enunciado: cuanto más cerca está el fantasma, mayor es la penalización.
+    # Si el fantasma está en la misma casilla, penalizamos con un valor muy alto para evitar ese estado a toda costa.
     if distanciaMinima > 0:
         puntuacion -= 100.0 * (1.0 / distanciaMinima)
     else:
