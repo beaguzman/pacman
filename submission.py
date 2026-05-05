@@ -105,17 +105,8 @@ def scoreEvaluationFunction(currentGameState: GameState):
       This evaluation function is meant for use with adversarial search agents
       (not reflex agents).
     """
-    min_ghostDistance = float('inf')
-    currentScore = currentGameState.getScore()
-
-    for ghost in currentGameState.getGhostPositions():
-        currentDistance = manhattanDistance(ghost, currentGameState.getPacmanPosition())
-        if currentDistance < min_ghostDistance: min_ghostDistance = currentDistance
-
-    return (currentScore - 100 * (1.0 / min_ghostDistance))
-    """
     return currentGameState.getScore()
-    """
+
 
 
 class MultiAgentSearchAgent(Agent):
