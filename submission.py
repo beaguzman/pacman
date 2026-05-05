@@ -256,7 +256,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Los agentes rotan: 0 → 1 → 2 → ... → (N-1) → 0 → 1 → ...
         # Cuando volvemos al agente 0 significa que una ronda entera ha pasado, por eso incrementamos la profundidad.
         siguienteAgente = (agente + 1) % totalAgentes
-        siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+        siguienteProfundidad = profundidad + (1 if siguienteAgente == self.index else 0)
 
         # NODO MAX: turno de pacman (agente 0)
         if agente == self.index:
@@ -305,7 +305,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         self.__numMovimientos += 1
 
         # Acciones legales de pacman en el estado actual
-        accionesPosibles = gameState.getLegalActions(0)
+        accionesPosibles = gameState.getLegalActions(self.index)
 
         # Si no hay acciones disponibles, pacman se detiene
         if not accionesPosibles:
@@ -322,10 +322,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         for accion in accionesPosibles:
             # Generamos el estado resultante de que pacman haga esta acción
-            estadoSucesor = gameState.generateSuccessor(0, accion)
+            estadoSucesor = gameState.generateSuccessor(self.index, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0
-            valorAccion = self.alphabeta(estadoSucesor, agente = 1, profundidad = 0, alfa = alfa, beta = beta)
+            valorAccion = self.alphabeta(estadoSucesor, agente = self.index+1, profundidad = 0, alfa = alfa, beta = beta)
 
             # Actualizamos la mejor acción encontrada hasta ahora
             if valorAccion > mejorValor:
@@ -344,9 +344,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
               f"Score actual: {gameState.getScore()}")
 
         # Comprobamos si el estado siguiente es terminal para mostrar el resumen de la tabla solo una vez, al acabar la partida
-        estadoFinal = gameState.generateSuccessor(0, mejorAccion)
+        estadoFinal = gameState.generateSuccessor(self.index, mejorAccion)
 
-        if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
+        if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(self.index):
             if estadoFinal.isWin():
                 resultado = "V (Victoria)"
             elif estadoFinal.isLose():
@@ -383,12 +383,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # --- CÁLCULO DEL SIGUIENTE TURNO ---
         # Igual que en MiniMax y ExpectiMax: rotamos agentes y subimos profundidad cuando volvemos al agente 0.
         siguienteAgente = (agente + 1) % totalAgentes
-        siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+        siguienteProfundidad = profundidad + (1 if siguienteAgente == self.index else 0)
 
-        totalAgentes = gameState.getNumAgents()
 
         # NODO MAX: turno de pacman (agente 0)
-        if agente == 0:
+        if agente == self.index:
             valorMax = float('-inf')
 
             for accion in accionesLegales:
@@ -404,7 +403,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     return valorMax
 
                 # Actualizamos alfa: MAX ya puede garantizarse valorMax
-                if valorMax >= alfa:
+                if valorMax > alfa:
                     alfa = valorMax
 
             return valorMax
@@ -415,14 +414,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             for accion in accionesLegales:
                 sucesor = gameState.generateSuccessor(agente, accion)
-
-                # Si quedan más fantasmas por jugar en esta ronda
-                if agente + 1 < totalAgentes:
-                    valorHijo = self.alphabeta(sucesor, agente+1, profundidad, alfa, beta)
-                else:
-                    # Todos los fantasmas han jugado → nueva ronda de pacman
-                    # aquí sí incrementamos la profundidad
-                    valorHijo = self.alphabeta(sucesor, 0, profundidad + 1, alfa, beta)
+                valorHijo=self.alphabeta(sucesor,siguienteAgente, siguienteProfundidad, alfa, beta)
 
                 if valorHijo < valorMin:
                     valorMin = valorHijo
@@ -432,7 +424,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     return valorMin
 
                 # Actualizamos beta: MIN ya puede garantizarse valorMin
-                if valorMin <= beta:
+                if valorMin < beta:
                     beta = valorMin
 
             return valorMin
@@ -459,7 +451,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         self.__numMovimientos += 1
 
         # Acciones legales de pacman en el estado actual
-        accionesPosibles = gameState.getLegalActions(0)
+        accionesPosibles = gameState.getLegalActions(self.index)
 
         # Si no hay acciones disponibles, pacman se detiene
         if not accionesPosibles:
@@ -470,11 +462,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         for accion in accionesPosibles:
             # Generamos el estado resultante de que pacman haga esta acción
-            estadoSucesor = gameState.generateSuccessor(0, accion)
+            estadoSucesor = gameState.generateSuccessor(self.index, accion)
 
             # Ahora le toca al agente 1 (primer fantasma), profundidad 0.
             # Al ser fantasma, llamamos al nodo de azar directamente.
-            valorAccion = self.expectimax(estadoSucesor, agente = 1, profundidad = 0)
+            valorAccion = self.expectimax(estadoSucesor, agente = self.index+1, profundidad = 0)
 
             # Nos quedamos con la acción de mayor valor esperado
             if valorAccion > mejorValor:
@@ -488,9 +480,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
               f"Score actual: {gameState.getScore()}")
 
         # Comprobamos si el estado siguiente es terminal para mostrar el resumen de la tabla solo una vez, al acabar la partida
-        estadoFinal = gameState.generateSuccessor(0, mejorAccion)
+        estadoFinal = gameState.generateSuccessor(self.index, mejorAccion)
 
-        if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(0):
+        if estadoFinal.isWin() or estadoFinal.isLose() or not estadoFinal.getLegalActions(self.index):
             if estadoFinal.isWin():
                 resultado = "V (Victoria)"
             elif estadoFinal.isLose():
@@ -528,10 +520,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # Los agentes rotan igual que en MiniMax.
         # Cuando volvemos al agente 0, incrementamos la profundidad.
         siguienteAgente = (agente + 1) % totalAgentes
-        siguienteProfundidad = profundidad + (1 if siguienteAgente == 0 else 0)
+        siguienteProfundidad = profundidad + (1 if siguienteAgente == self.index else 0)
 
         # NODO MAX: turno de pacman (agente 0)
-        if agente == 0:
+        if agente == self.index:
             valorMax = float('-inf')
 
             for accion in accionesLegales:
