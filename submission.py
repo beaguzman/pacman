@@ -400,11 +400,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
                 # Poda beta: si el valor ya supera lo que MIN permitiría,
                 # no tiene sentido seguir explorando este nodo MAX
-                if valorMax > beta:
+                if valorMax >= beta:
                     return valorMax
 
                 # Actualizamos alfa: MAX ya puede garantizarse valorMax
-                if valorMax > alfa:
+                if valorMax >= alfa:
                     alfa = valorMax
 
             return valorMax
@@ -428,11 +428,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     valorMin = valorHijo
 
                 # Poda alfa: si el valor ya es menor que lo que MAX garantiza, no tiene sentido seguir explorando este nodo MIN
-                if valorMin < alfa:
+                if valorMin <= alfa:
                     return valorMin
 
                 # Actualizamos beta: MIN ya puede garantizarse valorMin
-                if valorMin < beta:
+                if valorMin <= beta:
                     beta = valorMin
 
             return valorMin
